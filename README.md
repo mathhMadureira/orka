@@ -127,6 +127,10 @@ Without ORKA, this refund would execute instantly with no record.
 
 Live control panel with real-time metrics, execution history, risk scores, and audit trail.
 
+![ORKA Dashboard Overview](dashboard-overview.png)
+
+![ORKA Dashboard Full](dashboard.png)
+
 > **→ [See it live at orka.ia.br](https://orka.ia.br)**  
 > Beta access is free. Request an account to connect your first agent.
 
