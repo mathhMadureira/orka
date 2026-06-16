@@ -4,16 +4,15 @@
 
 # ORKA
 
-**Governance and audit layer for AI agents.**
+**Observability and policy control for AI agents in production.**
 
-AI agents take actions without oversight.  
-ORKA gives you control, approval flows, and immutable audit trails.
+AI agents take actions without oversight — they spend money, send emails, write to databases, and call APIs with no human checkpoint. ORKA adds that checkpoint.
 
-[![Beta](https://img.shields.io/badge/status-beta-5B5FFF?style=flat-square)](https://orka.ia.br)
-[![Platform](https://img.shields.io/badge/platform-web-black?style=flat-square)](https://orka.ia.br)
+[![PyPI version](https://img.shields.io/pypi/v/orkaia.svg)](https://pypi.org/project/orkaia/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Protocol](https://img.shields.io/badge/supports-MCP%20%7C%20A2A%20%7C%20REST-22C55E?style=flat-square)](#)
 
-[**Request Beta Access →**](https://orka.ia.br/register)
+[**orka.ia.br →**](https://orka.ia.br)
 
 </div>
 
@@ -21,28 +20,58 @@ ORKA gives you control, approval flows, and immutable audit trails.
 
 ## The problem
 
-AI agents are increasingly autonomous — they browse the web, write emails, execute code, call APIs, and transfer data.
+Real incidents, not hypotheticals:
 
-But most teams have **no visibility** into what their agents are actually doing.
+- An OpenAI Operator agent bought a dozen eggs for $31 without asking — its own safety protocol failed to trigger.
+- Replit's coding agent deleted a production database in 9 seconds, during a code freeze meant to prevent exactly that.
+- Air Canada was held legally liable for a refund policy its chatbot invented on the spot.
 
-- No approval flow before a risky action
-- No audit trail after something goes wrong
-- No policy enforcement across multiple agents
-- No way to quantify risk per agent
+Most teams running AI agents have **no checkpoint** between the agent's decision and the irreversible action — no approval flow, no audit trail, no policy enforcement, no way to quantify risk per agent.
 
-ORKA solves this.
+ORKA sits between your agent and the outside world:
+
+```
+Agent  →  ORKA  →  Policy check  →  Risk score  →  [Human approval?]  →  Execute  →  Immutable ledger
+```
+
+Every step is logged. Nothing irreversible happens without consent.
 
 ---
 
-## What ORKA does
+## Quickstart
 
-ORKA sits between your AI agents and the outside world. Every action goes through a control layer before execution.
-
+**Python**
+```bash
+pip install orkaia
 ```
-Agent  →  ORKA  →  Policy check  →  Risk analysis  →  [Human approval?]  →  Execute  →  Immutable ledger
-```
+```python
+import orka
 
-**Every step is logged. Nothing is irreversible without consent.**
+orka.init(api_key="orka_your_key_here")  # get one at orka.ia.br → Settings → API Keys
+
+@orka.guard(agent_id="my-agent", task_type="summarize")
+def run_agent(text: str) -> str:
+    return your_llm.call(text)  # unchanged
+```
+Full SDK, integrations (LangChain, CrewAI, OpenAI), and examples: [`python/`](python/)
+
+**TypeScript / JavaScript**
+```bash
+npm install orkaia-js
+```
+```typescript
+import orka from "orkaia-js";
+
+orka.init("orka_your_key_here");
+
+const summarize = orka.guard(
+  async (text: string) => yourLlm.call(text),
+  { agentId: "my-agent", taskType: "summarize" }
+);
+```
+Full SDK: [`typescript/`](typescript/)
+
+Every execution appears in real time at [orka.ia.br/dashboard](https://orka.ia.br/dashboard): input/output, duration, status, risk score, and a searchable audit trail.
 
 ---
 
@@ -50,19 +79,18 @@ Agent  →  ORKA  →  Policy check  →  Risk analysis  →  [Human approval?] 
 
 | Feature | Description |
 |---|---|
-| **X-Shield** | Policy engine — define rules per agent, domain, or task type |
+| **X-Shield** | Policy engine — rules per agent, domain, or task type |
 | **Approval flows** | Require human sign-off before high-risk actions execute |
 | **X-Assurance** | Dynamic risk scoring per agent based on execution history |
-| **Immutable ledger** | Cryptographically chained audit trail — tamper-evident by design |
-| **Multi-protocol** | Supports MCP, A2A, REST, and custom agent protocols |
-| **Real-time dashboard** | Live overview of all agents, executions, blocks, and alerts |
+| **Immutable ledger** | SHA-256 chained audit trail — tamper-evident by design |
+| **Multi-protocol** | MCP, A2A, REST, and custom agent protocols |
+| **Zapier connector** | Add a human-approval step to any Zap, no code required |
 
 ---
 
-## How it works
+## How it works without the SDK (REST)
 
-### 1. Register your agent
-
+**1. Register your agent**
 ```bash
 curl -X POST https://orka.ia.br/api/v1/agents/ \
   -H "X-API-Key: your_key" \
@@ -76,10 +104,7 @@ curl -X POST https://orka.ia.br/api/v1/agents/ \
   }'
 ```
 
-### 2. Route actions through ORKA
-
-Instead of calling external services directly, your agent sends a handover request:
-
+**2. Route actions through ORKA**
 ```bash
 curl -X POST https://orka.ia.br/api/v1/handover \
   -H "Authorization: Bearer agent_token" \
@@ -92,17 +117,7 @@ curl -X POST https://orka.ia.br/api/v1/handover \
   }'
 ```
 
-### 3. ORKA enforces your policies
-
-If the action triggers a policy rule (e.g. amount > $200 requires approval), ORKA:
-
-- **Blocks** the action automatically, or
-- **Pauses** and requests human approval, then
-- **Logs** the full event to the immutable ledger
-
-### 4. You see everything
-
-Every action, decision, approval, and block is visible in the dashboard in real time.
+**3. ORKA enforces your policies** — blocks automatically, or pauses for human approval, then logs the full event to the immutable ledger regardless of outcome.
 
 ---
 
@@ -119,20 +134,14 @@ Every action, decision, approval, and block is visible in the dashboard in real 
 | Approved | Action executes |
 | Ledger entry | Immutable record created with full context |
 
-Without ORKA, this refund would execute instantly with no record.
+Without ORKA, this refund executes instantly with no record.
 
 ---
 
 ## Dashboard
 
-Live control panel with real-time metrics, execution history, risk scores, and audit trail.
-
 ![ORKA Dashboard Overview](dashboard-overview.png)
-
 ![ORKA Dashboard Full](dashboard.png)
-
-> **→ [See it live at orka.ia.br](https://orka.ia.br)**  
-> Beta access is free. Request an account to connect your first agent.
 
 ---
 
@@ -150,34 +159,26 @@ Base URL: `https://orka.ia.br/api/v1`
 | `/approvals/{id}/approve` | POST | Approve a pending action |
 | `/xledger/entries` | GET | Query the immutable audit ledger |
 | `/xledger/verify` | GET | Verify chain integrity |
-| `/assurance/risk-report` | GET | Per-agent risk scores and insurance model |
+| `/assurance/risk-report` | GET | Per-agent risk scores |
 | `/metrics/dashboard` | GET | Real-time platform metrics |
 
-Authentication: `X-API-Key` header or `Bearer` token (issued per agent via `/xshield/tokens`).
-
----
-
-## Beta access
-
-ORKA is currently in **private beta**.
-
-- Free to use during beta
-- No credit card required
-- Priority support via email
-
-**[Register at orka.ia.br →](https://orka.ia.br/register)**
-
-Or email: **orkaruntimesuporte@hotmail.com**
+Authentication: `X-API-Key` header, or a `Bearer` agent token issued via `/xshield/tokens`.
 
 ---
 
 ## Tech stack
 
-- **Backend:** FastAPI (Python) — hosted on Render
-- **Frontend:** Next.js 16 — hosted on Vercel
-- **Database:** PostgreSQL
-- **Audit ledger:** SHA-256 chained entries, verified on read
-- **Agent protocols:** MCP, A2A, REST, Custom
+- **Backend:** FastAPI (Python)
+- **Frontend:** Next.js
+- **Database:** PostgreSQL with row-level security
+- **Audit ledger:** SHA-256 chained entries
+- **Agent protocols:** MCP, A2A, REST, custom
+
+---
+
+## Contributing
+
+Issues and PRs welcome — this is an early-stage open-core project. The SDKs in [`python/`](python/) and [`typescript/`](typescript/) are MIT-licensed and meant to be read, forked, and improved.
 
 ---
 
@@ -185,6 +186,6 @@ Or email: **orkaruntimesuporte@hotmail.com**
 
 Built for teams that deploy AI agents and need to stay in control.
 
-**[orka.ia.br](https://orka.ia.br)**
+**[orka.ia.br](https://orka.ia.br)** · contato@orka.ia.br
 
 </div>

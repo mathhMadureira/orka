@@ -1,0 +1,15 @@
+{
+  "name": "orkaia-js",
+  "version": "0.1.0",
+  "description": "Governance and audit SDK for AI agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["ai", "agents", "governance", "compliance", "audit", "eu-ai-act"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
