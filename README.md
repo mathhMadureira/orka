@@ -1,6 +1,6 @@
-<div align="center">
-
-<img src="https://orka.ia.br/icon.svg" width="64" height="64" alt="ORKA" />
+<p align="center">
+  <img src="https://orka.ia.br/icon.svg" alt="ORKA" width="96" />
+</p>
 
 # ORKA
 
@@ -8,13 +8,11 @@
 
 AI agents take actions without oversight — they spend money, send emails, write to databases, and call APIs with no human checkpoint. ORKA adds that checkpoint.
 
-[![PyPI version](https://img.shields.io/pypi/v/orkaia.svg)](https://pypi.org/project/orkaia/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Protocol](https://img.shields.io/badge/supports-MCP%20%7C%20A2A%20%7C%20REST-22C55E?style=flat-square)](#)
+> **What's open and what's not:** the Python and TypeScript SDKs in this repo are open source (MIT) — read them, fork them, run them. The governance backend they talk to (policy engine, risk scoring, immutable ledger) is a proprietary managed service at [orka.ia.br](https://orka.ia.br). This is an open-core project, not a self-hostable platform — see [Contributing](#contributing) for the exact line.
+
+[![PyPI version](https://img.shields.io/pypi/v/orkaia.svg)](https://pypi.org/project/orkaia/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/mathhMadureira/orka/blob/main/LICENSE) [![Protocol](https://img.shields.io/badge/supports-MCP%20%7C%20A2A%20%7C%20REST-22C55E?style=flat-square)](#)
 
 [**orka.ia.br →**](https://orka.ia.br)
-
-</div>
 
 ---
 
@@ -38,27 +36,45 @@ Every step is logged. Nothing irreversible happens without consent.
 
 ---
 
+## How it's split
+
+| Layer | What it is | Where it lives |
+| --- | --- | --- |
+| **Client SDKs** (`python/`, `typescript/`) | The `@guard` decorator, the REST client, examples, integrations | This repo, MIT, runs on your side |
+| **Governance backend** | Policy engine, risk scoring, immutable ledger, approval routing | Proprietary, managed service at orka.ia.br |
+
+The SDK is a thin client: it intercepts the call and hands it to the backend. The decision logic runs server-side. If you need everything in your own infrastructure, ORKA isn't that today — and the SDK code here lets you see exactly what crosses the boundary before you trust it.
+
+---
+
 ## Quickstart
 
+You'll need an API key from [orka.ia.br](https://orka.ia.br) → Settings → API Keys (this is what connects the SDK to the managed backend).
+
 **Python**
+
 ```bash
 pip install orkaia
 ```
+
 ```python
 import orka
 
-orka.init(api_key="orka_your_key_here")  # get one at orka.ia.br → Settings → API Keys
+orka.init(api_key="orka_your_key_here")
 
 @orka.guard(agent_id="my-agent", task_type="summarize")
 def run_agent(text: str) -> str:
     return your_llm.call(text)  # unchanged
 ```
-Full SDK, integrations (LangChain, CrewAI, OpenAI), and examples: [`python/`](python/)
+
+Full SDK, integrations (LangChain, CrewAI, OpenAI), and examples: [`python/`](https://github.com/mathhMadureira/orka/blob/main/python)
 
 **TypeScript / JavaScript**
+
 ```bash
 npm install orkaia-js
 ```
+
 ```typescript
 import orka from "orkaia-js";
 
@@ -69,7 +85,8 @@ const summarize = orka.guard(
   { agentId: "my-agent", taskType: "summarize" }
 );
 ```
-Full SDK: [`typescript/`](typescript/)
+
+Full SDK: [`typescript/`](https://github.com/mathhMadureira/orka/blob/main/typescript)
 
 Every execution appears in real time at [orka.ia.br/dashboard](https://orka.ia.br/dashboard): input/output, duration, status, risk score, and a searchable audit trail.
 
@@ -78,7 +95,7 @@ Every execution appears in real time at [orka.ia.br/dashboard](https://orka.ia.b
 ## Features
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | **X-Shield** | Policy engine — rules per agent, domain, or task type |
 | **Approval flows** | Require human sign-off before high-risk actions execute |
 | **X-Assurance** | Dynamic risk scoring per agent based on execution history |
@@ -91,6 +108,7 @@ Every execution appears in real time at [orka.ia.br/dashboard](https://orka.ia.b
 ## How it works without the SDK (REST)
 
 **1. Register your agent**
+
 ```bash
 curl -X POST https://orka.ia.br/api/v1/agents/ \
   -H "X-API-Key: your_key" \
@@ -105,6 +123,7 @@ curl -X POST https://orka.ia.br/api/v1/agents/ \
 ```
 
 **2. Route actions through ORKA**
+
 ```bash
 curl -X POST https://orka.ia.br/api/v1/handover \
   -H "Authorization: Bearer agent_token" \
@@ -126,7 +145,7 @@ curl -X POST https://orka.ia.br/api/v1/handover \
 > **Agent:** "Approve a $1,200 refund for customer #4821"
 
 | Step | What happens |
-|---|---|
+| --- | --- |
 | Agent sends request | ORKA receives the handover |
 | Policy check | Rule: refunds > $500 require approval |
 | Risk analysis | Score: 72/100 — flagged as HIGH |
@@ -140,8 +159,8 @@ Without ORKA, this refund executes instantly with no record.
 
 ## Dashboard
 
-![ORKA Dashboard Overview](dashboard-overview.png)
-![ORKA Dashboard Full](dashboard.png)
+![ORKA Dashboard Overview](https://github.com/mathhMadureira/orka/raw/main/dashboard-overview.png)
+![ORKA Dashboard Full](https://github.com/mathhMadureira/orka/raw/main/dashboard.png)
 
 ---
 
@@ -150,7 +169,7 @@ Without ORKA, this refund executes instantly with no record.
 Base URL: `https://orka.ia.br/api/v1`
 
 | Endpoint | Method | Description |
-|---|---|---|
+| --- | --- | --- |
 | `/agents/` | GET / POST | List or register agents |
 | `/handover` | POST | Submit an action for ORKA to process |
 | `/handover/{task_id}` | GET | Check execution status |
@@ -168,7 +187,7 @@ Authentication: `X-API-Key` header, or a `Bearer` agent token issued via `/xshie
 
 ## Tech stack
 
-- **Backend:** FastAPI (Python)
+- **Backend:** FastAPI (Python) — proprietary, managed service
 - **Frontend:** Next.js
 - **Database:** PostgreSQL with row-level security
 - **Audit ledger:** SHA-256 chained entries
@@ -178,14 +197,15 @@ Authentication: `X-API-Key` header, or a `Bearer` agent token issued via `/xshie
 
 ## Contributing
 
-Issues and PRs welcome — this is an early-stage open-core project. The SDKs in [`python/`](python/) and [`typescript/`](typescript/) are MIT-licensed and meant to be read, forked, and improved.
+ORKA is **open-core**:
+
+- The client SDKs in [`python/`](https://github.com/mathhMadureira/orka/blob/main/python) and [`typescript/`](https://github.com/mathhMadureira/orka/blob/main/typescript) are MIT-licensed and fully open — read, fork, improve.
+- The governance backend (policy engine, risk scoring, ledger) is proprietary and runs as a managed service. It is **not** in this repo and is not self-hostable today.
+
+Issues and PRs on the SDKs are welcome. If self-hosting the backend is a hard requirement for you, open an issue and say so — that's exactly the kind of signal that decides the roadmap.
 
 ---
-
-<div align="center">
 
 Built for teams that deploy AI agents and need to stay in control.
 
 **[orka.ia.br](https://orka.ia.br)** · contato@orka.ia.br
-
-</div>
