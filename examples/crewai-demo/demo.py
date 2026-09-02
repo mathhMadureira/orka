@@ -5,23 +5,27 @@ checagem de politica antes de executar e e registrada no ledger imutavel.
 Acoes de maior risco podem exigir aprovacao humana (politica no backend).
 
 Requisitos:
-    pip install orkaia crewai
-
-Setup (key nunca fica no codigo):
-    export ORKA_API_KEY=orka_...        # crie em https://orka.ia.br
-    export ORKA_AGENT_ID=<id-do-agente>
+    pip install "orkaia>=0.4.0" crewai
 
 Execucao:
     python demo.py
 
-Dashboard: https://orka.ia.br/dashboard
+A Orka roda em modo local (sem API key). Para enviar tudo ao dashboard:
+    export ORKA_API_KEY=orka_...   # key sempre do ambiente, nunca no codigo
+    Dashboard: https://orka.ia.br/dashboard
 """
 import os
 
 import orka
 
-orka.init(api_key=os.environ.get("ORKA_API_KEY", "orka_your_key_here"))
-AGENT_ID = os.environ.get("ORKA_AGENT_ID", "replace-with-your-agent-id")
+# Com ORKA_API_KEY no ambiente, envia ao dashboard. Sem ela, roda local.
+_key = os.environ.get("ORKA_API_KEY")
+if _key:
+    orka.init(api_key=_key)
+else:
+    orka.init(mode="local", enforce=True, per_run_usd=1.00, loop_threshold=3)
+
+AGENT_ID = os.environ.get("ORKA_AGENT_ID", "crewai-demo")
 
 
 # Cada tarefa da crew e envolvida pelo guard da Orka.

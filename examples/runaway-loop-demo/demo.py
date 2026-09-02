@@ -1,50 +1,47 @@
 """Orka — Demo: Loop Guard
 
 Veja a Orka cortar um agente preso em loop antes que ele queime seu orcamento.
+Roda em ~10 segundos, offline, sem API key e sem conta.
 
 Como funciona:
-    Cada tentativa do agente passa pela Orka (@orka.guard). O loop guard e uma
-    politica avaliada no backend: quando a Orka detecta a mesma acao falhando
-    repetidamente, ela devolve um bloqueio e o SDK levanta OrkaPolicyBlocked —
-    cortando a execucao ANTES da proxima chamada cara.
-
-    O SDK falha em modo seguro: se a Orka estiver inacessivel, seu codigo nunca
-    e bloqueado por erro de conectividade.
+    orka.init(mode="local") sobe um backend local (SQLite). Com enforce=True,
+    a Orka avalia cada acao: ao detectar a mesma acao repetida `loop_threshold`
+    vezes — ou ao estourar o teto de custo `per_run_usd` — ela devolve um
+    bloqueio e o SDK levanta OrkaPolicyBlocked, cortando a execucao ANTES da
+    proxima chamada cara.
 
 Requisitos:
-    pip install orkaia
-
-Setup (key nunca fica no codigo):
-    1. Crie uma conta gratis em https://orka.ia.br
-    2. Settings -> API Keys -> Create Key
-    3. Crie um agente e ative a politica de loop guard
-    4. export ORKA_API_KEY=orka_...
-       export ORKA_AGENT_ID=<id-do-seu-agente>
+    pip install "orkaia>=0.4.0"
 
 Execucao:
     python demo.py
 
-Dashboard em tempo real: https://orka.ia.br/dashboard
+Para enviar as execucoes ao dashboard, troque o init por:
+    orka.init(api_key=os.environ["ORKA_API_KEY"])   # key sempre do ambiente
+    Dashboard: https://orka.ia.br/dashboard
 """
-import os
 import time
 
 import orka
 from orka import OrkaPolicyBlocked
 
-# A key vem do ambiente — nunca hardcoded.
-orka.init(api_key=os.environ.get("ORKA_API_KEY", "orka_your_key_here"))
-AGENT_ID = os.environ.get("ORKA_AGENT_ID", "replace-with-your-agent-id")
+# Modo local: sem API key, sem rede. enforce=True faz a Orka cortar de verdade.
+orka.init(
+    mode="local",
+    enforce=True,
+    per_run_usd=0.50,   # teto de gasto por execucao
+    loop_threshold=3,   # corta apos 3 acoes repetidas
+)
 
-MAX_ATTEMPTS = 25  # trava de seguranca do demo (a Orka corta bem antes disso)
+MAX_ATTEMPTS = 25  # trava de seguranca do demo (a Orka corta bem antes)
 
 
-@orka.guard(agent_id=AGENT_ID, task_type="api_call", risk="LIMITED")
+@orka.guard(agent_id="burner-demo", task_type="api_call")
 def call_flaky_api(query: str) -> str:
-    """Uma tentativa de chamada de API que sempre falha.
+    """Uma chamada de API que sempre falha.
 
     Sem um guard, um agente com bug chamaria isso em loop, queimando
-    tokens/dinheiro. Cada chamada passa pela Orka antes de executar.
+    tokens/dinheiro. Cada tentativa passa pela Orka antes de executar.
     """
     time.sleep(0.1)
     raise RuntimeError("upstream 503 — API indisponivel")
@@ -56,7 +53,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print()
     print("Simulando um agente com bug que retenta a mesma chamada.")
-    print("A Orka deve cortar o loop via politica no backend.")
+    print(f"A Orka deve cortar apos {3} tentativas repetidas.")
     print()
 
     cut_by_orka = False
@@ -74,15 +71,17 @@ if __name__ == "__main__":
             print("   Falhou. O agente tentaria novamente...")
 
     print()
-    print("-" * 60)
     if not cut_by_orka:
         print("A Orka nao cortou o loop nesta execucao.")
-        print("Motivos possiveis (o SDK sempre falha em modo seguro):")
-        print("  - ORKA_API_KEY / ORKA_AGENT_ID nao configurados")
-        print("  - politica de loop guard nao ativada para este agente")
-        print("  - backend da Orka inacessivel")
-        print("Configure a key e a politica e rode de novo para ver o corte.")
+        print("Confira se instalou orkaia>=0.4.0 (modo local exige 0.4.0+).")
     else:
-        print("Veja o bloqueio registrado no dashboard:")
+        # Quanto a Orka evitou de desperdicio nesta run
+        try:
+            orka.summary()
+        except Exception:
+            pass
+
+    print("-" * 60)
+    print("Rode com sua conta para ver tudo no dashboard:")
     print("   https://orka.ia.br/dashboard")
     print("-" * 60)
