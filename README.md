@@ -12,6 +12,16 @@ AI agents loop on failed calls and burn tokens, spend money without asking, dele
 
 [**orka.ia.br →**](https://orka.ia.br)
 
+[![Python](https://img.shields.io/pypi/pyversions/orkaia)](https://pypi.org/project/orkaia/) [![Tests](https://github.com/mathhMadureira/orka/workflows/Tests/badge.svg)](https://github.com/mathhMadureira/orka/actions)
+
+> **Instale em 10 segundos:** `pip install orkaia`  
+> **Veja funcionar:** [Demo de Loop Guard](examples/runaway-loop-demo/)  
+> **CrewAI:** [Demo com 3 agentes](examples/crewai-demo/)  
+> **Dashboard:** [orka.ia.br](https://orka.ia.br)
+
+> **Nota:** O pacote PyPI chama-se `orkaia`. O repositorio GitHub e `orka`.
+> Instale sempre com: `pip install orkaia`
+
 ---
 
 ## Why this exists
@@ -61,6 +71,19 @@ result = search("latest quarterly report")
 ```
 
 Every execution appears in real time at [orka.ia.br/dashboard](https://orka.ia.br/dashboard): input/output, duration, cost, status, risk score, and a searchable audit trail.
+
+---
+
+## Tente em 10 segundos
+
+```bash
+git clone https://github.com/mathhMadureira/orka.git
+cd orka/examples/runaway-loop-demo
+pip install orkaia
+python demo.py
+```
+
+Veja a Orka cortar um loop infinito antes que ele queime dinheiro.
 
 ---
 
