@@ -44,7 +44,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      # Versao fixada: sem pin, um lancamento novo do ruff muda o conjunto de
+      # regras padrao e quebra o CI sem que nada no repo tenha mudado.
+      # (A 0.16.0 passou a incluir as regras UP por padrao.)
+      - run: pip install ruff==0.15.8
       - run: ruff check orka/
 
   publish:

@@ -1,7 +1,18 @@
+# secrets / credenciais — nunca commitar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
 __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 dist/
 build/
 *.egg-info/
