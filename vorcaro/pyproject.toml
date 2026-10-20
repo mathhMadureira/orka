@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vorcaro"
+version = "0.1.0"
+description = "Sistema multiagente de day trade com matemática precisa, padrões binários e gestão de risco."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.26",
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+crypto = ["ccxt>=4.0"]
+b3 = ["MetaTrader5>=5.0.45; platform_system == 'Windows'"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+vorcaro = "vorcaro.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I"]
+ignore = ["E731", "E741", "B008"]   # lambdas curtas, nomes l/h/c de OHLC, defaults frozen

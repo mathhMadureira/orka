@@ -1,0 +1,25 @@
+# Configuração padrão do Vorcaro. Valores monetários/percentuais viram Decimal exatos.
+
+[risk]
+risk_per_trade = "0.005"     # 0,5% do patrimônio arriscado por trade (até o stop)
+max_position_pct = "0.20"    # nenhuma posição > 20% do patrimônio
+max_daily_loss_pct = "0.02"  # trava o dia com -2%
+max_drawdown_pct = "0.10"    # trava tudo com -10% desde o pico (reset manual)
+max_open_positions = 5
+max_orders_per_day = 50
+sl_atr = 1.5
+tp_atr = 2.5
+kelly_fraction = 0.25        # 1/4 de Kelly
+probability_shrink = 0.3
+min_score = 0.15
+min_agreement = 0.6
+allow_short = true
+blocked = []
+
+[backtest]
+cash = "100000"
+fee_bps = 5.0
+slippage_bps = 2.0
+warmup = 300
+max_hold = 48
+flat_eod = true
